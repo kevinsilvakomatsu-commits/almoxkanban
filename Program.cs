@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using AlmoxKanban.Data;
 using AlmoxKanban.Services;
@@ -13,6 +14,19 @@ builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 
 // Configuração de URLs: lê a porta dinâmica na nuvem (Render/Docker) ou usa 5000 por padrão
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+});
+
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.Limits.MaxRequestHeadersTotalSize = 64 * 1024;
+    options.Limits.MaxRequestLineSize = 16 * 1024;
+});
+
 var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
 builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 
@@ -74,6 +88,8 @@ builder.Services.AddRazorPages(options =>
 builder.Services.AddAntiforgery(o => o.HeaderName = "XSRF-TOKEN");
 
 var app = builder.Build();
+
+app.UseForwardedHeaders();
 
 // Garantir pastas de dados e uploads
 var dataDir = Path.Combine(app.Environment.ContentRootPath, "Data");

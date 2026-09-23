@@ -13,6 +13,9 @@
         <!-- Sidebar -->
         <aside class="app-sidebar">
             <div class="sidebar-header">
+                    <button class="sidebar-close" id="sidebarClose" aria-label="Fechar menu">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
                 <div class="sidebar-brand-icon">
                     <i class="bi bi-box-seam-fill"></i>
                 </div>
@@ -95,6 +98,9 @@
         <!-- Main Content -->
         <div class="app-main">
             <header class="app-header">
+                <button class="sidebar-toggle" id="sidebarToggle" aria-label="Abrir menu">
+                    <i class="bi bi-list"></i>
+                </button>
                 <div class="page-title-area">
                     <h1>@ViewData["Title"]</h1>
                     <p>@ViewData["Subtitle"]</p>
@@ -131,6 +137,9 @@
             </main>
         </div>
     </div>
+
+    <!-- Overlay Sidebar Mobile -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
     <!-- Container Global para Toasts -->
     <div id="toast-container" class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1100;"></div>

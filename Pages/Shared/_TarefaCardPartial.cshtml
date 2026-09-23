@@ -48,6 +48,35 @@
                     <i class="bi bi-calendar-x"></i> Sem Prazo
                 </span>
             }
+
+            <!-- Menu de Ações Rápidas / Mover para Mobile e Desktop -->
+            <div class="dropdown card-quick-dropdown ms-auto">
+                <button class="btn btn-quick-action" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Ações Rápidas">
+                    <i class="bi bi-three-dots-vertical"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow border-0 py-1">
+                    <li><h6 class="dropdown-header py-1 text-muted small"><i class="bi bi-arrow-left-right me-1"></i> Mover Tarefa</h6></li>
+                    @if (Model.Status != StatusTarefa.Pendente)
+                    {
+                        <li><button type="button" class="dropdown-item py-1 small btn-quick-move" data-id="@Model.Id" data-target="Pendente"><i class="bi bi-circle-fill text-primary me-2" style="font-size: 0.6rem;"></i>Pendente</button></li>
+                    }
+                    @if (Model.Status != StatusTarefa.EmAndamento)
+                    {
+                        <li><button type="button" class="dropdown-item py-1 small btn-quick-move" data-id="@Model.Id" data-target="EmAndamento"><i class="bi bi-arrow-repeat text-warning me-2"></i>Em Andamento</button></li>
+                    }
+                    @if (Model.Status != StatusTarefa.Aguardando)
+                    {
+                        <li><button type="button" class="dropdown-item py-1 small btn-quick-move" data-id="@Model.Id" data-target="Aguardando"><i class="bi bi-pause-circle-fill me-2" style="color: #8b5cf6;"></i>Aguardando</button></li>
+                    }
+                    @if (Model.Status != StatusTarefa.Concluida)
+                    {
+                        <li><hr class="dropdown-divider my-1"></li>
+                        <li><a class="dropdown-item py-1 small text-success fw-semibold" href="/Tarefas/Concluir?id=@Model.Id"><i class="bi bi-check2-circle me-2"></i>Concluir com Foto</a></li>
+                    }
+                    <li><hr class="dropdown-divider my-1"></li>
+                    <li><a class="dropdown-item py-1 small text-secondary" href="/Tarefas/Detalhes?id=@Model.Id"><i class="bi bi-eye me-2"></i>Ver Detalhes</a></li>
+                </ul>
+            </div>
         </div>
 
         <a href="/Tarefas/Detalhes?id=@Model.Id" class="card-title" title="@Model.Titulo">
