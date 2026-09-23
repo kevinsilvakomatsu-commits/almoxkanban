@@ -1,0 +1,10 @@
+﻿**/.git
+**/.vs
+**/bin
+**/obj
+**/Logs
+Data/*.db
+Data/*.db-*
+Data/*.bkp*
+Publish_Output
+*.zip

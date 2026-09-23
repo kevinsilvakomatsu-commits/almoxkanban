@@ -1,0 +1,125 @@
+﻿@page
+@model AlmoxKanban.Pages.Tarefas.CriarModel
+@{
+    ViewData["Title"] = "Nova Tarefa";
+    ViewData["Subtitle"] = "Cadastrar nova demanda operacional para a equipe";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-header bg-white border-bottom p-4">
+                <div class="d-flex align-items-center justify-content-between">
+                    <h5 class="mb-0 fw-bold text-dark"><i class="bi bi-plus-circle text-primary me-2"></i>Formulário de Cadastro de Tarefa</h5>
+                    <a href="/" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left me-1"></i>Voltar ao Kanban</a>
+                </div>
+            </div>
+
+            <div class="card-body p-4">
+                @if (!string.IsNullOrEmpty(Model.MensagemErro))
+                {
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>@Model.MensagemErro
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
+                    </div>
+                }
+
+                <form method="post" enctype="multipart/form-data">
+                    @Html.AntiForgeryToken()
+
+                    <div class="row g-3">
+                        <!-- Título -->
+                        <div class="col-12">
+                            <label asp-for="Titulo" class="form-label fw-semibold text-secondary">Título da Tarefa <span class="text-danger">*</span></label>
+                            <input asp-for="Titulo" class="form-control" placeholder="Ex: Organização do Corredor B - Prateleira de Parafusos" autofocus />
+                            <span asp-validation-for="Titulo" class="text-danger small"></span>
+                        </div>
+
+                        <!-- Descrição Breve -->
+                        <div class="col-12">
+                            <label asp-for="Descricao" class="form-label fw-semibold text-secondary">Descrição Detalhada <span class="text-danger">*</span></label>
+                            <textarea asp-for="Descricao" rows="3" class="form-control" placeholder="Descreva claramente o que deve ser realizado pela equipe..."></textarea>
+                            <span asp-validation-for="Descricao" class="text-danger small"></span>
+                        </div>
+
+                        <!-- Prioridade e Status Inicial -->
+                        <div class="col-md-6">
+                            <label asp-for="Prioridade" class="form-label fw-semibold text-secondary">Prioridade</label>
+                            <select asp-for="Prioridade" class="form-select" asp-items="Html.GetEnumSelectList<PrioridadeTarefa>()"></select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="StatusInicial" class="form-label fw-semibold text-secondary">Status Inicial</label>
+                            <select asp-for="StatusInicial" class="form-select">
+                                <option value="Pendente" selected>Pendente</option>
+                                <option value="EmAndamento">Em Andamento</option>
+                                <option value="Aguardando">Aguardando</option>
+                            </select>
+                        </div>
+
+                        <!-- Responsáveis Obrigatórios (Múltiplos) -->
+                        <div class="col-12">
+                            <label class="form-label fw-semibold text-secondary">Responsáveis pela Tarefa <span class="text-danger">* (Selecione pelo menos um)</span></label>
+                            <div class="card bg-light border p-3 rounded-3" style="max-height: 180px; overflow-y: auto;">
+                                <div class="row g-2">
+                                    @foreach (var u in Model.UsuariosEquipe)
+                                    {
+                                        <div class="col-md-4 col-sm-6">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="ResponsaveisIds" value="@u.Id" id="user_@u.Id"
+                                                       @(Model.ResponsaveisIds.Contains(u.Id) ? "checked" : "") />
+                                                <label class="form-check-label small" for="user_@u.Id">
+                                                    <strong>@u.NomeCompleto</strong> <span class="text-muted">(@u.Funcao)</span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                            <span asp-validation-for="ResponsaveisIds" class="text-danger small"></span>
+                        </div>
+
+                        <!-- Prazo: Data e Hora Opcionais -->
+                        <div class="col-md-6">
+                            <label asp-for="DataPrazo" class="form-label fw-semibold text-secondary">Data do Prazo (Opcional)</label>
+                            <input asp-for="DataPrazo" type="date" class="form-control" />
+                            <span class="text-muted small">Deixe em branco para tarefa sem prazo.</span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="HoraPrazo" class="form-label fw-semibold text-secondary">Horário Limite (Opcional)</label>
+                            <input asp-for="HoraPrazo" type="time" class="form-control" />
+                        </div>
+
+                        <!-- Foto Principal em Destaque -->
+                        <div class="col-md-6">
+                            <label asp-for="FotoPrincipal" class="form-label fw-semibold text-secondary">Foto Principal em Destaque</label>
+                            <input asp-for="FotoPrincipal" type="file" accept="image/*" class="form-control" />
+                            <span class="text-muted small">Aparece diretamente no cartão do Kanban. (JPG, PNG ou WEBP)</span>
+                        </div>
+
+                        <!-- Fotos Adicionais -->
+                        <div class="col-md-6">
+                            <label asp-for="FotosAdicionais" class="form-label fw-semibold text-secondary">Fotos Adicionais / Anexos</label>
+                            <input asp-for="FotosAdicionais" type="file" accept="image/*" multiple class="form-control" />
+                            <span class="text-muted small">Pode selecionar múltiplas fotos da situação.</span>
+                        </div>
+
+                        <!-- Observações Gerais -->
+                        <div class="col-12">
+                            <label asp-for="Observacoes" class="form-label fw-semibold text-secondary">Observações ou Recomendações de Segurança</label>
+                            <textarea asp-for="Observacoes" rows="2" class="form-control" placeholder="Ex: Usar EPI (luvas e bota de bico de aço); empilhadeira disponível até 15h."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+                        <a href="/" class="btn btn-light px-4">Cancelar</a>
+                        <button type="submit" class="btn btn-primary px-4 fw-semibold shadow-sm">
+                            <i class="bi bi-check-lg me-1"></i> Criar Tarefa
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

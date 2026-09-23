@@ -1,0 +1,104 @@
+﻿@model AlmoxKanban.Models.Tarefa
+
+<div class="kanban-card" data-id="@Model.Id">
+    @if (!string.IsNullOrEmpty(Model.FotoCapaAtual))
+    {
+        <a href="/Tarefas/Detalhes?id=@Model.Id">
+            <img src="@Model.FotoCapaAtual" alt="@Model.Titulo" class="card-img-cover" loading="lazy" />
+        </a>
+    }
+
+    <div class="card-body-content">
+        <div class="card-badges">
+            <!-- Prioridade -->
+            @{
+                var prioClass = Model.Prioridade switch
+                {
+                    PrioridadeTarefa.Baixa => "badge-prio-baixa",
+                    PrioridadeTarefa.Normal => "badge-prio-normal",
+                    PrioridadeTarefa.Alta => "badge-prio-alta",
+                    PrioridadeTarefa.Urgente => "badge-prio-urgente",
+                    _ => "badge-prio-normal"
+                };
+            }
+            <span class="badge-prio @prioClass">@Model.Prioridade</span>
+
+            <!-- Prazo e Indicadores -->
+            @if (Model.EstaAtrasada)
+            {
+                <span class="badge-prazo badge-atrasada" title="Prazo vencido em @Model.DataPrazo?.ToString("dd/MM/yyyy HH:mm")">
+                    <i class="bi bi-alarm-fill"></i> Atrasada (@Model.DataPrazo?.ToString("dd/MM"))
+                </span>
+            }
+            else if (Model.PrazoHoje)
+            {
+                <span class="badge-prazo badge-hoje" title="Vence hoje às @Model.DataPrazo?.ToString("HH:mm")">
+                    <i class="bi bi-clock-fill"></i> Hoje (@Model.DataPrazo?.ToString("HH:mm"))
+                </span>
+            }
+            else if (Model.DataPrazo.HasValue)
+            {
+                <span class="badge-prazo badge-regular" title="Prazo: @Model.DataPrazo?.ToString("dd/MM/yyyy HH:mm")">
+                    <i class="bi bi-calendar-event"></i> @Model.DataPrazo?.ToString("dd/MM")
+                </span>
+            }
+            else
+            {
+                <span class="badge-prazo badge-semprazo" title="Esta tarefa não possui data de prazo">
+                    <i class="bi bi-calendar-x"></i> Sem Prazo
+                </span>
+            }
+        </div>
+
+        <a href="/Tarefas/Detalhes?id=@Model.Id" class="card-title" title="@Model.Titulo">
+            @Model.Titulo
+        </a>
+
+        <div class="card-desc">
+            @Model.Descricao
+        </div>
+
+        <div class="card-footer-info">
+            <!-- Avatares dos Responsáveis -->
+            <div class="avatars-stack" title="Responsáveis: @string.Join(", ", Model.Responsaveis.Select(r => r.Usuario.NomeCompleto))">
+                @foreach (var resp in Model.Responsaveis.Take(3))
+                {
+                    if (!string.IsNullOrEmpty(resp.Usuario.FotoPerfil))
+                    {
+                        <img src="@resp.Usuario.FotoPerfil" alt="@resp.Usuario.NomeCompleto" class="avatar-xs" />
+                    }
+                    else
+                    {
+                        var iniciais = string.Join("", resp.Usuario.NomeCompleto.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(s => s[0])).ToUpper();
+                        <span class="avatar-xs">@iniciais</span>
+                    }
+                }
+                @if (Model.Responsaveis.Count > 3)
+                {
+                    <span class="avatar-xs bg-dark text-white">+@(Model.Responsaveis.Count - 3)</span>
+                }
+            </div>
+
+            <!-- Contadores e Atualização -->
+            <div class="card-meta-icons">
+                @if (Model.Comentarios.Any())
+                {
+                    <span class="card-meta-item" title="@Model.Comentarios.Count comentários">
+                        <i class="bi bi-chat-text"></i> @Model.Comentarios.Count
+                    </span>
+                }
+
+                @if (Model.Fotos.Any())
+                {
+                    <span class="card-meta-item" title="@Model.Fotos.Count fotos anexadas">
+                        <i class="bi bi-paperclip"></i> @Model.Fotos.Count
+                    </span>
+                }
+
+                <span class="card-meta-item text-muted" title="Última atualização: @Model.DataAtualizacao.ToString("dd/MM/yyyy HH:mm")">
+                    <i class="bi bi-clock-history"></i> @Model.DataAtualizacao.ToString("dd/MM")
+                </span>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,195 @@
+﻿@page
+@model AlmoxKanban.Pages.Dashboard.IndexModel
+@{
+    ViewData["Title"] = "Dashboard Operacional";
+    ViewData["Subtitle"] = "Indicadores reais de desempenho e produtividade do almoxarifado";
+    var m = Model.Metricas;
+}
+
+<!-- Barra de Filtros do Dashboard -->
+<div class="card border-0 shadow-sm mb-4 rounded-3">
+    <div class="card-body p-3">
+        <form method="get" class="row g-2 align-items-center">
+            <div class="col-md-2">
+                <label class="form-label small text-muted mb-0">Data Início</label>
+                <input type="date" asp-for="DataInicio" class="form-control form-control-sm" />
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label small text-muted mb-0">Data Fim</label>
+                <input type="date" asp-for="DataFim" class="form-control form-control-sm" />
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label small text-muted mb-0">Responsável</label>
+                <select asp-for="ResponsavelId" class="form-select form-select-sm">
+                    <option value="">Todos os Responsáveis</option>
+                    @foreach (var resp in Model.UsuariosEquipe)
+                    {
+                        <option value="@resp.Id">@resp.NomeCompleto</option>
+                    }
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label small text-muted mb-0">Prioridade</label>
+                <select asp-for="Prioridade" class="form-select form-select-sm" asp-items="Html.GetEnumSelectList<PrioridadeTarefa>()">
+                    <option value="">Todas</option>
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label small text-muted mb-0">Status</label>
+                <select asp-for="Status" class="form-select form-select-sm" asp-items="Html.GetEnumSelectList<StatusTarefa>()">
+                    <option value="">Todos</option>
+                </select>
+            </div>
+
+            <div class="col-md-1 d-flex align-items-end gap-1">
+                <button type="submit" class="btn btn-sm btn-primary w-100 fw-semibold" title="Aplicar Filtros">
+                    <i class="bi bi-funnel-fill"></i>
+                </button>
+                <a href="/Dashboard" class="btn btn-sm btn-outline-secondary" title="Limpar">
+                    <i class="bi bi-arrow-counterclockwise"></i>
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Cards de Métricas Principais -->
+<div class="row g-3 mb-4">
+    <!-- Total Criadas -->
+    <div class="col-xl-3 col-sm-6">
+        <div class="metric-card">
+            <div>
+                <div class="metric-value">@m.TotalCriadas</div>
+                <div class="metric-label">Total Criadas</div>
+            </div>
+            <div class="metric-icon-circle bg-primary-subtle text-primary">
+                <i class="bi bi-folder2-open"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Em Andamento -->
+    <div class="col-xl-3 col-sm-6">
+        <div class="metric-card">
+            <div>
+                <div class="metric-value text-warning">@m.TotalEmAndamento</div>
+                <div class="metric-label">Em Andamento</div>
+            </div>
+            <div class="metric-icon-circle bg-warning-subtle text-warning">
+                <i class="bi bi-arrow-repeat"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Total Concluídas -->
+    <div class="col-xl-3 col-sm-6">
+        <div class="metric-card">
+            <div>
+                <div class="metric-value text-success">@m.TotalConcluidas</div>
+                <div class="metric-label">Concluídas (@m.PercentualConclusao%)</div>
+            </div>
+            <div class="metric-icon-circle bg-success-subtle text-success">
+                <i class="bi bi-check-circle-fill"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Total Atrasadas -->
+    <div class="col-xl-3 col-sm-6">
+        <div class="metric-card">
+            <div>
+                <div class="metric-value text-danger">@m.TotalAtrasadas</div>
+                <div class="metric-label">Atrasadas</div>
+            </div>
+            <div class="metric-icon-circle bg-danger-subtle text-danger">
+                <i class="bi bi-exclamation-octagon-fill"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Segunda Linha de Indicadores Secundários -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3 col-6">
+        <div class="p-3 bg-white border rounded-3 text-center">
+            <span class="text-muted small d-block">Pendentes</span>
+            <strong class="fs-4 text-primary">@m.TotalPendentes</strong>
+        </div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="p-3 bg-white border rounded-3 text-center">
+            <span class="text-muted small d-block">Aguardando</span>
+            <strong class="fs-4" style="color: #8b5cf6;">@m.TotalAguardando</strong>
+        </div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="p-3 bg-white border rounded-3 text-center">
+            <span class="text-muted small d-block">Sem Prazo</span>
+            <strong class="fs-4 text-secondary">@m.TotalSemPrazo</strong>
+        </div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="p-3 bg-white border rounded-3 text-center">
+            <span class="text-muted small d-block">Tempo Médio Conclusão</span>
+            <strong class="fs-4 text-dark">@(m.MediaHorasConclusao > 0 ? $"{m.MediaHorasConclusao}h" : "-")</strong>
+        </div>
+    </div>
+</div>
+
+<!-- Gráficos -->
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm rounded-4 p-4">
+            <h6 class="fw-bold text-dark mb-3"><i class="bi bi-pie-chart-fill text-primary me-2"></i>Tarefas por Status</h6>
+            <div style="height: 280px;">
+                <canvas id="chartStatus"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm rounded-4 p-4">
+            <h6 class="fw-bold text-dark mb-3"><i class="bi bi-bar-chart-fill text-primary me-2"></i>Tarefas por Prioridade</h6>
+            <div style="height: 280px;">
+                <canvas id="chartPrioridade"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm rounded-4 p-4">
+            <h6 class="fw-bold text-dark mb-3"><i class="bi bi-pie-chart text-success me-2"></i>Cumprimento de Prazo das Concluídas</h6>
+            <div style="height: 280px;">
+                <canvas id="chartPrazo"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm rounded-4 p-4">
+            <h6 class="fw-bold text-dark mb-3"><i class="bi bi-people-fill text-info me-2"></i>Volume de Tarefas por Responsável</h6>
+            <div style="height: 280px;">
+                <canvas id="chartResponsavel"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/lib/chartjs/chart.umd.min.js"></script>
+    <script src="~/js/dashboard.js" asp-append-version="true"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const dadosStatus = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(m.PorStatus));
+            const dadosPrioridade = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(m.PorPrioridade));
+            const dadosPrazo = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(m.ConclusaoPrazo));
+            const dadosResponsavel = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(m.PorResponsavel));
+
+            window.renderDashboardCharts(dadosStatus, dadosPrioridade, dadosPrazo, dadosResponsavel);
+        });
+    </script>
+}

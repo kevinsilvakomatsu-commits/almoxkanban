@@ -1,0 +1,88 @@
+﻿@page
+@model AlmoxKanban.Pages.Equipe.EditarModel
+@{
+    ViewData["Title"] = $"Editar Integrante: {Model.NomeUsuario}";
+    ViewData["Subtitle"] = "Atualizar informações de cadastro e perfil";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-header bg-white border-bottom p-4">
+                <div class="d-flex align-items-center justify-content-between">
+                    <h5 class="mb-0 fw-bold text-dark"><i class="bi bi-pencil-square text-primary me-2"></i>Edição de Usuário: @@@Model.NomeUsuario</h5>
+                    <a href="/Equipe" class="btn btn-outline-secondary btn-sm">Voltar</a>
+                </div>
+            </div>
+
+            <div class="card-body p-4">
+                @if (!string.IsNullOrEmpty(Model.MensagemErro))
+                {
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>@Model.MensagemErro
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+
+                <form method="post" enctype="multipart/form-data">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="Id" />
+
+                    <div class="mb-3">
+                        <label asp-for="NomeCompleto" class="form-label fw-semibold text-secondary">Nome Completo</label>
+                        <input asp-for="NomeCompleto" class="form-control" />
+                        <span asp-validation-for="NomeCompleto" class="text-danger small"></span>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label asp-for="Funcao" class="form-label fw-semibold text-secondary">Função / Cargo</label>
+                            <input asp-for="Funcao" class="form-control" />
+                            <span asp-validation-for="Funcao" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="NovaSenhaReset" class="form-label fw-semibold text-secondary">Redefinir Senha (Opcional)</label>
+                            <input asp-for="NovaSenhaReset" type="password" class="form-control" placeholder="Deixe em branco para manter" />
+                            <div class="form-text small">Preencha apenas se desejar redefinir a senha do usuário.</div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="NovaFotoPerfil" class="form-label fw-semibold text-secondary">Foto de Perfil</label>
+                        <input asp-for="NovaFotoPerfil" type="file" accept="image/*" class="form-control" />
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <div class="card bg-light border p-3 rounded-3">
+                                <div class="form-check form-switch">
+                                    <input asp-for="Ativo" class="form-check-input" type="checkbox" id="chkAtivo">
+                                    <label class="form-check-label fw-bold" for="chkAtivo">Usuário Ativo</label>
+                                </div>
+                                <div class="small text-muted mt-1">Se desmarcado, o usuário não conseguirá logar.</div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="card bg-light border p-3 rounded-3">
+                                <div class="form-check form-switch">
+                                    <input asp-for="IsAdmin" class="form-check-input" type="checkbox" id="chkAdmin">
+                                    <label class="form-check-label fw-bold" for="chkAdmin">Perfil de Líder / Admin</label>
+                                </div>
+                                <div class="small text-muted mt-1">Acesso administrativo completo.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+                        <a href="/Equipe" class="btn btn-light px-4">Cancelar</a>
+                        <button type="submit" class="btn btn-primary px-4 fw-semibold shadow-sm">
+                            <i class="bi bi-check-lg me-1"></i> Salvar Alterações
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

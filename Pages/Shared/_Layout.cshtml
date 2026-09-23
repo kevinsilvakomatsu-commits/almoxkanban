@@ -1,0 +1,164 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Gestão de Tarefas Almoxarifado</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap-icons/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <div class="app-wrapper">
+        <!-- Sidebar -->
+        <aside class="app-sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-brand-icon">
+                    <i class="bi bi-box-seam-fill"></i>
+                </div>
+                <div>
+                    <div class="sidebar-brand-text">AlmoxKanban</div>
+                    <div class="sidebar-brand-subtitle">Gestão de Almoxarifado</div>
+                </div>
+            </div>
+
+            <nav class="sidebar-menu">
+                <a href="/" class="sidebar-item @(ViewContext.RouteData.Values["page"]?.ToString() == "/Index" ? "active" : "")">
+                    <i class="bi bi-kanban"></i>
+                    <span>Quadro Kanban</span>
+                </a>
+
+                <a href="/Dashboard" class="sidebar-item @(ViewContext.RouteData.Values["page"]?.ToString()?.StartsWith("/Dashboard") == true ? "active" : "")">
+                    <i class="bi bi-bar-chart-fill"></i>
+                    <span>Dashboard</span>
+                </a>
+
+                @if (User.IsInRole("Admin"))
+                {
+                    <a href="/Equipe" class="sidebar-item @(ViewContext.RouteData.Values["page"]?.ToString()?.StartsWith("/Equipe") == true ? "active" : "")">
+                        <i class="bi bi-people-fill"></i>
+                        <span>Equipe</span>
+                    </a>
+
+                    <a href="/Backup" class="sidebar-item @(ViewContext.RouteData.Values["page"]?.ToString()?.StartsWith("/Backup") == true ? "active" : "")">
+                        <i class="bi bi-shield-lock-fill"></i>
+                        <span>Backup & Dados</span>
+                    </a>
+                }
+
+                <a href="/MeuPerfil" class="sidebar-item @(ViewContext.RouteData.Values["page"]?.ToString()?.StartsWith("/MeuPerfil") == true ? "active" : "")">
+                    <i class="bi bi-person-bounding-box"></i>
+                    <span>Meu Perfil</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-snippet mb-3">
+                    @{
+                        var foto = User.FindFirst("FotoPerfil")?.Value;
+                        var nome = User.FindFirst("NomeCompleto")?.Value ?? User.Identity?.Name ?? "Usuário";
+                        var funcao = User.FindFirst("Funcao")?.Value ?? (User.IsInRole("Admin") ? "Administrador" : "Equipe");
+                        var iniciais = string.Join("", nome.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(s => s[0])).ToUpper();
+                    }
+
+                    @if (!string.IsNullOrEmpty(foto))
+                    {
+                        <img src="@foto" alt="@nome" class="user-avatar" />
+                    }
+                    else
+                    {
+                        <div class="user-avatar">@iniciais</div>
+                    }
+
+                    <div class="user-info">
+                        <div class="user-name" title="@nome">@nome</div>
+                        <div class="user-role">@funcao</div>
+                    </div>
+                </div>
+
+                <form method="post" asp-page="/Logout">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-outline-danger btn-sm w-100 d-flex align-items-center justify-content-center gap-2">
+                        <i class="bi bi-box-arrow-right"></i> Sair do Sistema
+                    </button>
+                </form>
+
+                <div class="sidebar-credit" title="Desenvolvido por Kevin Silva">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sidebar-credit-icon">
+                        <path d="M8 6L2 12l6 6M16 6l6 6-6 6" />
+                    </svg>
+                    <span>Desenvolvido por Kevin Silva</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <div class="app-main">
+            <header class="app-header">
+                <div class="page-title-area">
+                    <h1>@ViewData["Title"]</h1>
+                    <p>@ViewData["Subtitle"]</p>
+                </div>
+
+                <div class="d-flex align-items-center gap-3">
+                    <a href="/Tarefas/Criar" class="btn btn-primary d-flex align-items-center gap-2 px-3 py-2 fw-semibold shadow-sm">
+                        <i class="bi bi-plus-lg"></i>
+                        <span>Nova Tarefa</span>
+                    </a>
+                </div>
+            </header>
+
+            <main class="app-content">
+                @if (TempData["MensagemSucesso"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show d-flex align-items-center gap-2 shadow-sm" role="alert">
+                        <i class="bi bi-check-circle-fill fs-5"></i>
+                        <div>@TempData["MensagemSucesso"]</div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
+                    </div>
+                }
+
+                @if (TempData["MensagemErro"] != null)
+                {
+                    <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center gap-2 shadow-sm" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+                        <div>@TempData["MensagemErro"]</div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
+                    </div>
+                }
+
+                @RenderBody()
+            </main>
+        </div>
+    </div>
+
+    <!-- Container Global para Toasts -->
+    <div id="toast-container" class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1100;"></div>
+
+    <!-- Modal Global de Confirmação -->
+    <div class="modal fade" id="modalConfirmacaoGlobal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold" id="modalConfirmacaoTitulo">Confirmação</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body py-4" id="modalConfirmacaoMensagem">
+                    Tem certeza de que deseja realizar esta ação?
+                </div>
+                <div class="modal-footer border-top-0 pt-0">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary px-4" id="modalConfirmacaoBtnSim">Confirmar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts Básicos Locais -->
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
+
+

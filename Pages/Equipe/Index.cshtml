@@ -1,0 +1,113 @@
+﻿@page
+@model AlmoxKanban.Pages.Equipe.IndexModel
+@{
+    ViewData["Title"] = "Gestão da Equipe";
+    ViewData["Subtitle"] = "Acompanhamento operacional dos integrantes do almoxarifado";
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div class="d-flex gap-2">
+        <a href="/Equipe/Criar" class="btn btn-primary btn-sm fw-semibold px-3 shadow-sm">
+            <i class="bi bi-person-plus-fill me-1"></i> Cadastrar Integrante
+        </a>
+        <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalImportar">
+            <i class="bi bi-file-earmark-excel-fill me-1"></i> Importar Usuários (Excel)
+        </button>
+        <a href="/Equipe?handler=BaixarModelo" class="btn btn-outline-secondary btn-sm" title="Baixar planilha modelo">
+            <i class="bi bi-download me-1"></i> Baixar Modelo Excel
+        </a>
+    </div>
+</div>
+
+<div class="row g-3">
+    @foreach (var item in Model.Equipe)
+    {
+        var u = item.Usuario;
+        <div class="col-xl-4 col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 h-100 p-3">
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    @if (!string.IsNullOrEmpty(u.FotoPerfil))
+                    {
+                        <img src="@u.FotoPerfil" alt="@u.NomeCompleto" class="rounded-circle" style="width: 56px; height: 56px; object-fit: cover;" />
+                    }
+                    else
+                    {
+                        var iniciais = string.Join("", u.NomeCompleto.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(s => s[0])).ToUpper();
+                        <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold fs-5" style="width: 56px; height: 56px;">
+                            @iniciais
+                        </div>
+                    }
+
+                    <div class="flex-grow-1 min-width-0">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <h6 class="fw-bold text-dark mb-0 text-truncate">@u.NomeCompleto</h6>
+                            @if (u.Ativo)
+                            {
+                                <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill small">Ativo</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary-subtle text-secondary rounded-pill small">Inativo</span>
+                            }
+                        </div>
+                        <div class="text-muted small">@u.Funcao</div>
+                        <div class="text-secondary small font-monospace">@@@u.NomeUsuario @(u.IsAdmin ? "• (Líder/Admin)" : "")</div>
+                    </div>
+                </div>
+
+                <!-- Contadores Operacionais -->
+                <div class="row g-1 text-center py-2 bg-light rounded-3 mb-3">
+                    <div class="col-4">
+                        <span class="text-muted d-block" style="font-size: 0.7rem;">Pendentes</span>
+                        <strong class="text-primary fs-6">@item.TarefasPendentes</strong>
+                    </div>
+                    <div class="col-4 border-start border-end">
+                        <span class="text-muted d-block" style="font-size: 0.7rem;">Em Andamento</span>
+                        <strong class="text-warning fs-6">@item.TarefasEmAndamento</strong>
+                    </div>
+                    <div class="col-4">
+                        <span class="text-muted d-block" style="font-size: 0.7rem;">Concluídas</span>
+                        <strong class="text-success fs-6">@item.TarefasConcluidas</strong>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2 mt-auto pt-2 border-top">
+                    <a href="/Equipe/Perfil?id=@u.Id" class="btn btn-light btn-sm w-100 fw-semibold text-secondary">
+                        <i class="bi bi-eye-fill me-1"></i> Detalhes
+                    </a>
+                    <a href="/Equipe/Editar?id=@u.Id" class="btn btn-outline-primary btn-sm px-3" title="Editar Usuário">
+                        <i class="bi bi-pencil-square"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Modal Importar Usuários -->
+<div class="modal fade" id="modalImportar" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <form method="post" asp-page-handler="Importar" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-file-earmark-excel-fill text-success me-2"></i> Importar Usuários por Excel</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body py-3">
+                    <p class="small text-muted mb-3">
+                        Carregue uma planilha no formato Excel (.xlsx) contendo as colunas: <strong>Nome, Usuário, Função, SenhaInicial, Ativo</strong>.
+                    </p>
+                    <input type="file" asp-for="PlanilhaExcel" accept=".xlsx" class="form-control mb-3" required />
+                    <div class="small text-muted">
+                        Dica: use a opção <strong>"Baixar Modelo Excel"</strong> para obter a planilha com os exemplos já formatados.
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-success px-3 fw-semibold">Iniciar Importação</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,73 @@
+﻿@page
+@model AlmoxKanban.Pages.Tarefas.ConcluirModel
+@{
+    var t = Model.Tarefa!;
+    ViewData["Title"] = "Concluir Tarefa";
+    ViewData["Subtitle"] = $"Registro de solução e evidência fotográfica da tarefa #{t.Id}";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-header bg-success text-white p-4 rounded-top-4">
+                <div class="d-flex align-items-center justify-content-between">
+                    <h5 class="mb-0 fw-bold d-flex align-items-center gap-2">
+                        <i class="bi bi-check2-circle fs-3"></i> Conclusão de Tarefa Operacional
+                    </h5>
+                    <a href="/Tarefas/Detalhes?id=@t.Id" class="btn btn-outline-light btn-sm">Voltar</a>
+                </div>
+            </div>
+
+            <div class="card-body p-4">
+                <!-- Resumo da Tarefa -->
+                <div class="alert alert-light border p-3 rounded-3 mb-4">
+                    <h6 class="fw-bold text-dark mb-1">#@t.Id - @t.Titulo</h6>
+                    <p class="text-muted small mb-0">@t.Descricao</p>
+                </div>
+
+                @if (!string.IsNullOrEmpty(Model.MensagemErro))
+                {
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>@Model.MensagemErro
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+
+                <form method="post" enctype="multipart/form-data">
+                    @Html.AntiForgeryToken()
+
+                    <div class="mb-3">
+                        <label asp-for="DescricaoSolucao" class="form-label fw-semibold text-secondary">
+                            Descrição Breve da Solução <span class="text-danger">*</span>
+                        </label>
+                        <textarea asp-for="DescricaoSolucao" rows="4" class="form-control" placeholder="Descreva como o serviço foi executado, materiais alocados, prateleiras organizadas, etc..." autofocus></textarea>
+                        <span asp-validation-for="DescricaoSolucao" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="FotosResolucao" class="form-label fw-semibold text-secondary">
+                            Foto(s) Comprovatória(s) da Resolução <span class="text-danger">* (Obrigatório anexar pelo menos 1 foto)</span>
+                        </label>
+                        <input asp-for="FotosResolucao" type="file" accept="image/*" multiple class="form-control" />
+                        <span asp-validation-for="FotosResolucao" class="text-danger small"></span>
+                        <div class="form-text small text-muted">
+                            Tire ou selecione fotos nítidas do resultado final da tarefa no almoxarifado. Formatos aceitos: JPG, PNG, WEBP.
+                        </div>
+                    </div>
+
+                    <div class="alert alert-warning py-2 small d-flex align-items-center gap-2">
+                        <i class="bi bi-shield-check fs-5"></i>
+                        <span>Seu usuário e o horário exato da conclusão serão registrados de forma automática na auditoria da tarefa.</span>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+                        <a href="/Tarefas/Detalhes?id=@t.Id" class="btn btn-light px-4">Cancelar</a>
+                        <button type="submit" class="btn btn-success px-4 fw-semibold shadow-sm">
+                            <i class="bi bi-check-lg me-1"></i> Confirmar Conclusão da Tarefa
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

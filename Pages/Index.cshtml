@@ -1,0 +1,143 @@
+﻿@page
+@model AlmoxKanban.Pages.IndexModel
+@{
+    ViewData["Title"] = "Quadro Kanban";
+    ViewData["Subtitle"] = "Acompanhamento visual e movimentação operacional das tarefas";
+}
+
+<!-- Formulário Anti-Forgery para chamadas AJAX -->
+@Html.AntiForgeryToken()
+
+<!-- Barra de Filtros -->
+<div class="card border-0 shadow-sm mb-4 rounded-3">
+    <div class="card-body p-3">
+        <form method="get" class="row g-2 align-items-center">
+            <div class="col-md-3">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" asp-for="Termo" class="form-control border-start-0" placeholder="Buscar por título ou descrição..." />
+                </div>
+            </div>
+
+            <div class="col-md-2">
+                <select asp-for="ResponsavelId" class="form-select form-select-sm">
+                    <option value="">Todos os Responsáveis</option>
+                    @foreach (var resp in Model.UsuariosEquipe)
+                    {
+                        <option value="@resp.Id">@resp.NomeCompleto</option>
+                    }
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <select asp-for="PrioridadeFiltro" class="form-select form-select-sm" asp-items="Html.GetEnumSelectList<PrioridadeTarefa>()">
+                    <option value="">Todas as Prioridades</option>
+                </select>
+            </div>
+
+            <div class="col-md-3 d-flex flex-wrap gap-2">
+                <div class="form-check form-check-inline m-0">
+                    <input class="form-check-input" type="checkbox" asp-for="SomenteAtrasadas" id="chkAtrasadas">
+                    <label class="form-check-label small text-danger fw-semibold" for="chkAtrasadas">Atrasadas</label>
+                </div>
+                <div class="form-check form-check-inline m-0">
+                    <input class="form-check-input" type="checkbox" asp-for="PrazoHoje" id="chkHoje">
+                    <label class="form-check-label small text-warning fw-bold" for="chkHoje">Prazo Hoje</label>
+                </div>
+                <div class="form-check form-check-inline m-0">
+                    <input class="form-check-input" type="checkbox" asp-for="SemPrazo" id="chkSemPrazo">
+                    <label class="form-check-label small text-muted" for="chkSemPrazo">Sem Prazo</label>
+                </div>
+                <div class="form-check form-check-inline m-0">
+                    <input class="form-check-input" type="checkbox" asp-for="MinhasTarefas" id="chkMinhas">
+                    <label class="form-check-label small text-primary fw-semibold" for="chkMinhas">Minhas</label>
+                </div>
+            </div>
+
+            <div class="col-md-2 d-flex gap-2 justify-content-end">
+                <button type="submit" class="btn btn-sm btn-primary px-3 fw-semibold">
+                    <i class="bi bi-funnel-fill me-1"></i> Filtrar
+                </button>
+                <a href="/" class="btn btn-sm btn-outline-secondary" title="Limpar Filtros">
+                    <i class="bi bi-arrow-counterclockwise"></i>
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Quadro Kanban -->
+<div class="kanban-board">
+    <!-- Coluna: Pendente -->
+    <div class="kanban-column column-pendente">
+        <div class="column-header">
+            <h3 class="column-title">
+                <i class="bi bi-circle-fill text-primary fs-6"></i>
+                <span>Pendente</span>
+            </h3>
+            <span class="badge-count">@Model.Pendentes.Count</span>
+        </div>
+        <div class="kanban-cards" data-status="Pendente">
+            @foreach (var tarefa in Model.Pendentes)
+            {
+                @await Html.PartialAsync("_TarefaCardPartial", tarefa)
+            }
+        </div>
+    </div>
+
+    <!-- Coluna: Em Andamento -->
+    <div class="kanban-column column-emandamento">
+        <div class="column-header">
+            <h3 class="column-title">
+                <i class="bi bi-arrow-repeat text-warning fs-6"></i>
+                <span>Em Andamento</span>
+            </h3>
+            <span class="badge-count">@Model.EmAndamento.Count</span>
+        </div>
+        <div class="kanban-cards" data-status="EmAndamento">
+            @foreach (var tarefa in Model.EmAndamento)
+            {
+                @await Html.PartialAsync("_TarefaCardPartial", tarefa)
+            }
+        </div>
+    </div>
+
+    <!-- Coluna: Aguardando -->
+    <div class="kanban-column column-aguardando">
+        <div class="column-header">
+            <h3 class="column-title">
+                <i class="bi bi-pause-circle-fill fs-6" style="color: #8b5cf6;"></i>
+                <span>Aguardando</span>
+            </h3>
+            <span class="badge-count">@Model.Aguardando.Count</span>
+        </div>
+        <div class="kanban-cards" data-status="Aguardando">
+            @foreach (var tarefa in Model.Aguardando)
+            {
+                @await Html.PartialAsync("_TarefaCardPartial", tarefa)
+            }
+        </div>
+    </div>
+
+    <!-- Coluna: Concluída -->
+    <div class="kanban-column column-concluida">
+        <div class="column-header">
+            <h3 class="column-title">
+                <i class="bi bi-check-circle-fill text-success fs-6"></i>
+                <span>Concluída</span>
+            </h3>
+            <span class="badge-count">@Model.Concluidas.Count</span>
+        </div>
+        <div class="kanban-cards" data-status="Concluida">
+            @foreach (var tarefa in Model.Concluidas)
+            {
+                @await Html.PartialAsync("_TarefaCardPartial", tarefa)
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/lib/sortablejs/sortable.min.js"></script>
+    <script src="~/js/kanban.js" asp-append-version="true"></script>
+}

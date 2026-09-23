@@ -1,0 +1,377 @@
+﻿@page
+@model AlmoxKanban.Pages.Tarefas.DetalhesModel
+@{
+    var t = Model.Tarefa!;
+    ViewData["Title"] = $"Tarefa #{t.Id}: {t.Titulo}";
+    ViewData["Subtitle"] = $"Criada por {t.Criador?.NomeCompleto ?? "Sistema"} em {t.DataCriacao:dd/MM/yyyy HH:mm}";
+}
+
+<div class="row g-4">
+    <!-- Coluna Principal (Detalhes, Galeria, Resolução, Comentários) -->
+    <div class="col-lg-8">
+        <!-- Card de Informações da Tarefa -->
+        <div class="card border-0 shadow-sm rounded-4 mb-4">
+            <div class="card-body p-4">
+                <!-- Cabeçalho e Badges -->
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+                    <div class="d-flex flex-wrap gap-2 align-items-center">
+                        <span class="badge bg-secondary fs-6 px-3 py-2">Status: @t.Status</span>
+                        <span class="badge bg-primary fs-6 px-3 py-2">Prioridade: @t.Prioridade</span>
+                        @if (t.EstaAtrasada)
+                        {
+                            <span class="badge bg-danger fs-6 px-3 py-2"><i class="bi bi-exclamation-octagon-fill me-1"></i>Atrasada</span>
+                        }
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        @if (t.Status != StatusTarefa.Concluida && t.Status != StatusTarefa.Cancelada)
+                        {
+                            <a href="/Tarefas/Concluir?id=@t.Id" class="btn btn-success btn-sm fw-semibold px-3 shadow-sm">
+                                <i class="bi bi-check2-circle me-1"></i> Concluir Tarefa
+                            </a>
+                        }
+
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <a href="/Tarefas/Editar?id=@t.Id" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-pencil-square me-1"></i> Editar
+                            </a>
+
+                            @if (t.Status == StatusTarefa.Concluida)
+                            {
+                                <button type="button" class="btn btn-outline-warning btn-sm" data-bs-toggle="modal" data-bs-target="#modalReabrir">
+                                    <i class="bi bi-arrow-counterclockwise me-1"></i> Reabrir
+                                </button>
+                            }
+
+                            @if (t.Status != StatusTarefa.Cancelada && t.Status != StatusTarefa.Concluida)
+                            {
+                                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#modalCancelar">
+                                    <i class="bi bi-x-circle me-1"></i> Cancelar
+                                </button>
+                            }
+
+                            <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#modalExcluir">
+                                <i class="bi bi-trash3 me-1"></i> Excluir
+                            </button>
+                        }
+                    </div>
+                </div>
+
+                <h3 class="fw-bold text-dark mb-3">@t.Titulo</h3>
+                <div class="p-3 bg-light rounded-3 text-secondary mb-4" style="white-space: pre-wrap; font-size: 0.95rem; line-height: 1.6;">@t.Descricao</div>
+
+                @if (!string.IsNullOrEmpty(t.Observacoes))
+                {
+                    <div class="alert alert-info py-2 px-3 small mb-4">
+                        <i class="bi bi-info-circle-fill me-1"></i> <strong>Observações:</strong> @t.Observacoes
+                    </div>
+                }
+
+                <!-- Foto Principal (Antes) -->
+                @if (!string.IsNullOrEmpty(t.FotoPrincipal))
+                {
+                    <div class="mb-4">
+                        <h6 class="fw-bold text-dark mb-2 d-flex align-items-center gap-2">
+                            <i class="bi bi-image"></i> Foto Principal em Destaque
+                            @if (t.Resolucao != null)
+                            {
+                                <span class="badge bg-secondary" style="font-size: 0.65rem;"><i class="bi bi-clock-history"></i> ANTES (registrada na criação)</span>
+                            }
+                        </h6>
+                        <a href="@t.FotoPrincipal" target="_blank">
+                            <img src="@t.FotoPrincipal" alt="Foto Principal" class="img-fluid rounded-3 border shadow-sm" style="max-height: 380px; width: 100%; object-fit: cover;" />
+                        </a>
+                    </div>
+                }
+
+                <!-- Galeria de Fotos Adicionais -->
+                @if (t.Fotos.Any())
+                {
+                    <div class="mb-4">
+                        <h6 class="fw-bold text-dark mb-2"><i class="bi bi-images me-1"></i>Fotos e Anexos da Situação (@t.Fotos.Count)</h6>
+                        <div class="task-gallery">
+                            @foreach (var f in t.Fotos)
+                            {
+                                <a href="@f.CaminhoArquivo" target="_blank" title="@f.NomeOriginal">
+                                    <img src="@f.CaminhoArquivo" alt="@f.NomeOriginal" class="gallery-thumbnail" />
+                                </a>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Evidência da Resolução (Se Concluída) -->
+        @if (t.Resolucao != null)
+        {
+            <div class="card border-0 shadow-sm rounded-4 mb-4 border-start border-success border-4">
+                <div class="card-header bg-success text-white py-3 px-4 rounded-top-4">
+                    <h5 class="mb-0 fw-bold d-flex align-items-center gap-2">
+                        <i class="bi bi-patch-check-fill fs-4"></i> Comprovante e Evidência de Resolução
+                        <span class="badge bg-white text-success" style="font-size: 0.65rem;"><i class="bi bi-star-fill"></i> DEPOIS (registrada na conclusão)</span>
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-3 mb-3">
+                        <div class="col-sm-6">
+                            <span class="text-muted small d-block">Concluído Por</span>
+                            <strong>@(t.Resolucao.UsuarioConclusao?.NomeCompleto ?? "Usuário da Equipe")</strong>
+                        </div>
+                        <div class="col-sm-6">
+                            <span class="text-muted small d-block">Data e Horário</span>
+                            <strong>@t.Resolucao.DataConclusao.ToString("dd/MM/yyyy HH:mm")</strong>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <span class="text-muted small d-block mb-1">Descrição da Solução Aplicada</span>
+                        <div class="p-3 bg-light rounded-3 text-dark fw-medium" style="white-space: pre-wrap;">@t.Resolucao.Descricao</div>
+                    </div>
+
+                    @if (t.Resolucao.Fotos.Any())
+                    {
+                        <div>
+                            <span class="text-muted small d-block mb-1">Fotos Comprovatórias da Tarefa Resolvida</span>
+                            @if (t.Resolucao.Fotos.Count > 1)
+                            {
+                                <span class="text-muted small d-block mb-2"><i class="bi bi-info-circle"></i> Esta é a imagem exibida no card do Kanban. Passe o mouse e clique em "Definir como capa" para escolher outra.</span>
+                            }
+                            <div class="resolution-gallery">
+                                @foreach (var f in t.Resolucao.Fotos)
+                                {
+                                    <div class="gallery-item-capa @(f.IsCapa ? "is-capa" : "")">
+                                        <a href="@f.CaminhoArquivo" target="_blank" title="Foto da Resolução">
+                                            <img src="@f.CaminhoArquivo" alt="Foto da Resolução" class="gallery-thumbnail" style="border: 2px solid #10b981;" />
+                                        </a>
+
+                                        @if (f.IsCapa)
+                                        {
+                                            <span class="badge-capa-atual"><i class="bi bi-star-fill"></i> Capa do Card</span>
+                                        }
+                                        else if (t.Resolucao.Fotos.Count > 1)
+                                        {
+                                            <form method="post" asp-page-handler="DefinirCapa" asp-route-id="@t.Id" class="btn-definir-capa-form">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="fotoId" value="@f.Id" />
+                                                <button type="submit" class="btn-definir-capa" title="Usar esta foto como capa do card no Kanban">
+                                                    <i class="bi bi-star"></i> Definir como capa
+                                                </button>
+                                            </form>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
+        <!-- Seção de Comentários -->
+        <div class="card border-0 shadow-sm rounded-4 mb-4">
+            <div class="card-header bg-white border-bottom py-3 px-4">
+                <h5 class="mb-0 fw-bold text-dark"><i class="bi bi-chat-left-text-fill text-primary me-2"></i>Comentários Operacionais (@t.Comentarios.Count)</h5>
+            </div>
+            <div class="card-body p-4">
+                <!-- Lista de comentários existentes -->
+                @if (!t.Comentarios.Any())
+                {
+                    <p class="text-muted small mb-4">Nenhum comentário registrado nesta tarefa até o momento.</p>
+                }
+                else
+                {
+                    <div class="d-flex flex-direction-column flex-column gap-3 mb-4">
+                        @foreach (var c in t.Comentarios.OrderBy(c => c.DataCriacao))
+                        {
+                            <div class="p-3 bg-light rounded-3 border">
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <strong>@c.Usuario.NomeCompleto</strong>
+                                        <span class="badge bg-secondary" style="font-size: 0.65rem;">@c.Usuario.Funcao</span>
+                                    </div>
+                                    <span class="text-muted" style="font-size: 0.75rem;">@c.DataCriacao.ToString("dd/MM/yyyy HH:mm")</span>
+                                </div>
+                                <div class="text-dark small" style="white-space: pre-wrap;">@c.Texto</div>
+                            </div>
+                        }
+                    </div>
+                }
+
+                <!-- Formulário para novo comentário -->
+                <form method="post" asp-page-handler="Comentar" asp-route-id="@t.Id">
+                    @Html.AntiForgeryToken()
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold text-secondary">Inserir Novo Comentário</label>
+                        <textarea asp-for="NovoComentario" rows="2" class="form-control" placeholder="Escreva uma observação ou atualização sobre a tarefa..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-sm px-3 fw-semibold">
+                        <i class="bi bi-send-fill me-1"></i> Publicar Comentário
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Coluna Lateral (Metadados, Responsáveis, Linha do Tempo) -->
+    <div class="col-lg-4">
+        <!-- Metadados -->
+        <div class="card border-0 shadow-sm rounded-4 mb-4">
+            <div class="card-header bg-white border-bottom py-3 px-4">
+                <h6 class="mb-0 fw-bold text-dark"><i class="bi bi-info-circle text-primary me-2"></i>Informações Gerais</h6>
+            </div>
+            <div class="card-body p-4">
+                <div class="d-flex flex-column gap-3 small">
+                    <div>
+                        <span class="text-muted d-block">Prazo Limite</span>
+                        @if (t.DataPrazo.HasValue)
+                        {
+                            <strong>@t.DataPrazo.Value.ToString("dd/MM/yyyy HH:mm")</strong>
+                        }
+                        else
+                        {
+                            <span class="text-muted">Sem prazo definido</span>
+                        }
+                    </div>
+
+                    <div>
+                        <span class="text-muted d-block">Criado por</span>
+                        <strong>@(t.Criador?.NomeCompleto ?? "Sistema")</strong> em @t.DataCriacao.ToString("dd/MM/yyyy HH:mm")
+                    </div>
+
+                    <div>
+                        <span class="text-muted d-block">Última Atualização</span>
+                        <strong>@t.DataAtualizacao.ToString("dd/MM/yyyy HH:mm")</strong>
+                    </div>
+
+                    @if (t.DataConclusao.HasValue)
+                    {
+                        <div>
+                            <span class="text-muted d-block">Data de Conclusão</span>
+                            <strong class="text-success">@t.DataConclusao.Value.ToString("dd/MM/yyyy HH:mm")</strong>
+                        </div>
+                    }
+                </div>
+
+                <hr class="my-3" />
+
+                <!-- Responsáveis -->
+                <h6 class="fw-bold text-dark mb-3"><i class="bi bi-people-fill text-primary me-1"></i>Responsáveis Atribuídos (@t.Responsaveis.Count)</h6>
+                <div class="d-flex flex-column gap-2">
+                    @foreach (var resp in t.Responsaveis)
+                    {
+                        <div class="d-flex align-items-center gap-2 p-2 rounded-2 bg-light">
+                            @if (!string.IsNullOrEmpty(resp.Usuario.FotoPerfil))
+                            {
+                                <img src="@resp.Usuario.FotoPerfil" alt="@resp.Usuario.NomeCompleto" class="rounded-circle" style="width: 32px; height: 32px; object-fit: cover;" />
+                            }
+                            else
+                            {
+                                var iniciais = string.Join("", resp.Usuario.NomeCompleto.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(s => s[0])).ToUpper();
+                                <div class="avatar-xs bg-primary text-white">@iniciais</div>
+                            }
+                            <div>
+                                <div class="fw-semibold small">@resp.Usuario.NomeCompleto</div>
+                                <div class="text-muted" style="font-size: 0.7rem;">@resp.Usuario.Funcao</div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Linha do Tempo / Histórico Completo -->
+        <div class="card border-0 shadow-sm rounded-4 mb-4">
+            <div class="card-header bg-white border-bottom py-3 px-4">
+                <h6 class="mb-0 fw-bold text-dark"><i class="bi bi-clock-history text-primary me-2"></i>Linha do Tempo (Auditoria)</h6>
+            </div>
+            <div class="card-body p-4">
+                <div class="timeline">
+                    @foreach (var hist in t.Historicos.OrderByDescending(h => h.DataRegistro))
+                    {
+                        <div class="timeline-item">
+                            <div class="timeline-dot"></div>
+                            <div class="timeline-date">@hist.DataRegistro.ToString("dd/MM/yyyy HH:mm")</div>
+                            <div class="timeline-content">
+                                <div class="fw-bold small text-dark">@hist.TipoAlteracao - @hist.Usuario.NomeCompleto</div>
+                                <div class="small text-secondary">@hist.Descricao</div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Reabrir Tarefa -->
+<div class="modal fade" id="modalReabrir" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <form method="post" asp-page-handler="Reabrir" asp-route-id="@t.Id">
+                @Html.AntiForgeryToken()
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold text-warning"><i class="bi bi-arrow-counterclockwise me-1"></i> Reabrir Tarefa</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body py-3">
+                    <p class="small text-muted mb-2">Ao reabrir a tarefa, o status voltará para <strong>Em Andamento</strong>. É obrigatório registrar uma justificativa clara.</p>
+                    <label class="form-label small fw-semibold text-secondary">Justificativa da Reabertura <span class="text-danger">*</span></label>
+                    <textarea asp-for="JustificativaReabertura" rows="3" class="form-control" required placeholder="Ex: O material não foi conferido completamente pelo supervisor..."></textarea>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-warning fw-semibold px-3">Confirmar Reabertura</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Cancelar Tarefa -->
+<div class="modal fade" id="modalCancelar" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <form method="post" asp-page-handler="Cancelar" asp-route-id="@t.Id">
+                @Html.AntiForgeryToken()
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold text-secondary"><i class="bi bi-x-circle me-1"></i> Cancelar Tarefa</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body py-3">
+                    <p class="small text-muted mb-2">Informe o motivo do cancelamento operacional da tarefa.</p>
+                    <label class="form-label small fw-semibold text-secondary">Motivo do Cancelamento</label>
+                    <textarea asp-for="MotivoCancelamento" rows="3" class="form-control" placeholder="Ex: Pedido cancelado pelo fornecedor..."></textarea>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Voltar</button>
+                    <button type="submit" class="btn btn-secondary fw-semibold px-3">Confirmar Cancelamento</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Excluir Tarefa -->
+<div class="modal fade" id="modalExcluir" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <form method="post" asp-page-handler="Excluir" asp-route-id="@t.Id">
+                @Html.AntiForgeryToken()
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold text-danger"><i class="bi bi-trash3 me-1"></i> Excluir Tarefa</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body py-3">
+                    <p class="text-danger fw-semibold mb-1">Atenção: esta ação não pode ser desfeita!</p>
+                    <p class="small text-muted">A tarefa #@t.Id, todos os seus comentários, anexos e fotos serão removidos definitivamente do sistema e do disco.</p>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-danger fw-semibold px-3">Excluir Definitivamente</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

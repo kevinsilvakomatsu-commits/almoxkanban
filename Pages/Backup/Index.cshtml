@@ -1,0 +1,77 @@
+﻿@page
+@model AlmoxKanban.Pages.Backup.IndexModel
+@{
+    ViewData["Title"] = "Backup & Exportação de Dados";
+    ViewData["Subtitle"] = "Segurança operacional, cópias de segurança e relatórios em Excel";
+}
+
+<div class="row g-4">
+    <!-- Card Backup Completo (Banco + Fotos) -->
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm rounded-4 h-100 p-4">
+            <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="rounded-3 bg-primary-subtle text-primary p-3 fs-3">
+                    <i class="bi bi-file-earmark-zip-fill"></i>
+                </div>
+                <div>
+                    <h5 class="fw-bold text-dark mb-1">Cópia de Segurança Completa (ZIP)</h5>
+                    <p class="text-muted small mb-0">Banco de dados SQLite + todas as fotos de tarefas e resoluções</p>
+                </div>
+            </div>
+
+            <p class="text-secondary small mb-4">
+                Gera um arquivo compacto <strong>.ZIP</strong> contendo o arquivo físico do banco de dados (<code>Data/tarefas.db</code>) e a pasta completa de uploads de imagens (<code>wwwroot/uploads</code>). Permite restaurar o sistema integralmente em qualquer momento.
+            </p>
+
+            <div class="bg-light p-3 rounded-3 mb-4 small">
+                <div class="d-flex justify-content-between py-1 border-bottom">
+                    <span class="text-muted">Total de Tarefas cadastradas:</span>
+                    <strong>@Model.TotalTarefas</strong>
+                </div>
+                <div class="d-flex justify-content-between py-1 border-bottom">
+                    <span class="text-muted">Total de Colaboradores:</span>
+                    <strong>@Model.TotalUsuarios</strong>
+                </div>
+                <div class="d-flex justify-content-between py-1">
+                    <span class="text-muted">Total de Fotos arquivadas:</span>
+                    <strong>@Model.TotalFotos</strong>
+                </div>
+            </div>
+
+            <div class="mt-auto">
+                <a href="/Backup?handler=GerarBackup" class="btn btn-primary w-100 py-2 fw-semibold shadow-sm">
+                    <i class="bi bi-download me-2"></i> Baixar Arquivo de Backup Agora
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card Exportação de Tarefas para Excel -->
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm rounded-4 h-100 p-4">
+            <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="rounded-3 bg-success-subtle text-success p-3 fs-3">
+                    <i class="bi bi-file-earmark-excel-fill"></i>
+                </div>
+                <div>
+                    <h5 class="fw-bold text-dark mb-1">Relatório Completo de Tarefas (Excel)</h5>
+                    <p class="text-muted small mb-0">Planilha formatada (.xlsx) com status e cumprimento de prazos</p>
+                </div>
+            </div>
+
+            <p class="text-secondary small mb-4">
+                Exporta todas as tarefas operacionais para uma planilha Excel estruturada, incluindo identificação, título, status, prioridade, equipe responsável, datas de abertura e resolução, e auditoria de cumprimento de prazo.
+            </p>
+
+            <div class="alert alert-success py-2 small mb-4">
+                <i class="bi bi-check-circle-fill me-1"></i> Totalmente autônomo: não requer o Microsoft Excel instalado no computador para gerar os relatórios.
+            </div>
+
+            <div class="mt-auto">
+                <a href="/Backup?handler=ExportarExcel" class="btn btn-success w-100 py-2 fw-semibold shadow-sm">
+                    <i class="bi bi-file-earmark-spreadsheet me-2"></i> Exportar Tarefas para Excel (.xlsx)
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
