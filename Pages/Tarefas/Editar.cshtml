@@ -48,23 +48,31 @@
 
                         <div class="col-md-6 col-12">
                             <label asp-for="DataPrazo" class="form-label fw-semibold text-secondary">Data do Prazo</label>
-                            <input asp-for="DataPrazo" type="date" class="form-control" />
+                            <input asp-for="DataPrazo" type="date" asp-format="{0:yyyy-MM-dd}" class="form-control" id="DataPrazo" />
                         </div>
 
                         <div class="col-md-6 col-12">
                             <label asp-for="HoraPrazo" class="form-label fw-semibold text-secondary">Horário Limite</label>
-                            <input asp-for="HoraPrazo" type="time" class="form-control" />
+                            <input asp-for="HoraPrazo" type="time" class="form-control" id="HoraPrazo" />
                         </div>
 
                         <div class="col-md-6 col-12">
-                            <label asp-for="NovaFotoPrincipal" class="form-label fw-semibold text-secondary">
-                                <i class="bi bi-camera me-1"></i> Trocar Foto Principal
+                            <label class="form-label fw-semibold text-secondary d-flex align-items-center justify-content-between mb-1">
+                                <span><i class="bi bi-camera me-1"></i> Trocar Foto Principal</span>
                             </label>
-                            <input asp-for="NovaFotoPrincipal" type="file" accept="image/*" class="form-control" id="NovaFotoPrincipal" />
-                            <div class="image-preview-grid mt-2"></div>
+                            <div class="d-flex flex-wrap gap-2 mb-2">
+                                <button type="button" class="btn btn-upload-action btn-upload-camera" data-target-input="NovaFotoPrincipal" data-mode="camera">
+                                    <i class="bi bi-camera-fill"></i> Tirar Foto Direto
+                                </button>
+                                <button type="button" class="btn btn-upload-action btn-upload-gallery" data-target-input="NovaFotoPrincipal" data-mode="gallery">
+                                    <i class="bi bi-folder2-open"></i> Galeria / Arquivo
+                                </button>
+                            </div>
+                            <input asp-for="NovaFotoPrincipal" type="file" accept="image/*" class="form-control d-none" id="NovaFotoPrincipal" />
+                            <div class="image-preview-grid mt-2" id="preview-NovaFotoPrincipal"></div>
                             @if (!string.IsNullOrEmpty(Model.FotoPrincipalAtual))
                             {
-                                <div class="mt-1 small text-muted">Foto atual cadastrada. Envie um novo arquivo caso queira substituí-la.</div>
+                                <div class="mt-1 small text-muted">Foto atual cadastrada. Tire ou envie uma nova caso queira substituí-la.</div>
                             }
                         </div>
 

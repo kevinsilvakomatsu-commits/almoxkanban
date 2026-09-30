@@ -64,6 +64,10 @@ namespace AlmoxKanban.Pages.Tarefas
         public async Task OnGetAsync()
         {
             UsuariosEquipe = await _context.Usuarios.Where(u => u.Ativo).OrderBy(u => u.NomeCompleto).ToListAsync();
+
+            var agora = DateTime.Now;
+            DataPrazo = agora.Date.AddDays(1);
+            HoraPrazo = agora.AddHours(1).ToString("HH:mm");
         }
 
         public async Task<IActionResult> OnPostAsync()

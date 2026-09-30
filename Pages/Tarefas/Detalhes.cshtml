@@ -262,13 +262,16 @@
                     @foreach (var resp in t.Responsaveis)
                     {
                         <div class="d-flex align-items-center gap-2 p-2 rounded-2 bg-light">
+                            @{
+                                var iniciais = string.Join("", resp.Usuario.NomeCompleto.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(s => s[0])).ToUpper();
+                            }
                             @if (!string.IsNullOrEmpty(resp.Usuario.FotoPerfil))
                             {
-                                <img src="@resp.Usuario.FotoPerfil" alt="@resp.Usuario.NomeCompleto" class="rounded-circle" style="width: 32px; height: 32px; object-fit: cover;" />
+                                <img src="@resp.Usuario.FotoPerfil" alt="@resp.Usuario.NomeCompleto" class="rounded-circle" style="width: 32px; height: 32px; object-fit: cover;" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';" />
+                                <div class="avatar-xs bg-primary text-white" style="display: none;">@iniciais</div>
                             }
                             else
                             {
-                                var iniciais = string.Join("", resp.Usuario.NomeCompleto.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(s => s[0])).ToUpper();
                                 <div class="avatar-xs bg-primary text-white">@iniciais</div>
                             }
                             <div>

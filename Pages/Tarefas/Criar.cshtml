@@ -79,36 +79,53 @@
                             <span asp-validation-for="ResponsaveisIds" class="text-danger small"></span>
                         </div>
 
-                        <!-- Prazo: Data e Hora Opcionais -->
+                        <!-- Prazo: Data e Hora Opcionais (Pré-definidos com Amanhã e +1 Hora) -->
                         <div class="col-md-6 col-12">
                             <label asp-for="DataPrazo" class="form-label fw-semibold text-secondary">Data do Prazo (Opcional)</label>
-                            <input asp-for="DataPrazo" type="date" class="form-control" />
-                            <span class="text-muted small">Deixe em branco para tarefa sem prazo.</span>
+                            <input asp-for="DataPrazo" type="date" asp-format="{0:yyyy-MM-dd}" class="form-control" id="DataPrazo" />
+                            <span class="text-muted small">Padrão: dia seguinte. Deixe em branco se for sem prazo.</span>
                         </div>
 
                         <div class="col-md-6 col-12">
                             <label asp-for="HoraPrazo" class="form-label fw-semibold text-secondary">Horário Limite (Opcional)</label>
-                            <input asp-for="HoraPrazo" type="time" class="form-control" />
+                            <input asp-for="HoraPrazo" type="time" class="form-control" id="HoraPrazo" />
+                            <span class="text-muted small">Padrão: horário atual + 1 hora.</span>
                         </div>
 
                         <!-- Foto Principal em Destaque -->
                         <div class="col-md-6 col-12">
-                            <label asp-for="FotoPrincipal" class="form-label fw-semibold text-secondary">
-                                <i class="bi bi-camera me-1"></i> Foto Principal em Destaque
+                            <label class="form-label fw-semibold text-secondary d-flex align-items-center justify-content-between mb-1">
+                                <span><i class="bi bi-camera me-1"></i> Foto Principal em Destaque</span>
                             </label>
-                            <input asp-for="FotoPrincipal" type="file" accept="image/*" class="form-control" id="FotoPrincipal" />
-                            <div class="image-preview-grid mt-2"></div>
-                            <span class="text-muted small d-block">Foto exibida no cartão do Kanban. Tire com a câmera ou selecione um arquivo.</span>
+                            <div class="d-flex flex-wrap gap-2 mb-2">
+                                <button type="button" class="btn-upload-action btn-upload-camera" data-target-input="FotoPrincipal" data-mode="camera">
+                                    <i class="bi bi-camera-fill"></i> Tirar Foto Direto
+                                </button>
+                                <button type="button" class="btn-upload-action btn-upload-gallery" data-target-input="FotoPrincipal" data-mode="gallery">
+                                    <i class="bi bi-folder2-open"></i> Galeria / Arquivos
+                                </button>
+                            </div>
+                            <input asp-for="FotoPrincipal" type="file" accept="image/*" class="form-control d-none" id="FotoPrincipal" />
+                            <div class="image-preview-grid mt-2" id="preview-FotoPrincipal"></div>
+                            <span class="text-muted small d-block">Foto exibida no cartão do Kanban. Tire com a câmera do celular ou selecione da galeria.</span>
                         </div>
 
                         <!-- Fotos Adicionais -->
                         <div class="col-md-6 col-12">
-                            <label asp-for="FotosAdicionais" class="form-label fw-semibold text-secondary">
-                                <i class="bi bi-images me-1"></i> Fotos Adicionais / Anexos
+                            <label class="form-label fw-semibold text-secondary d-flex align-items-center justify-content-between mb-1">
+                                <span><i class="bi bi-images me-1"></i> Fotos Adicionais / Anexos</span>
                             </label>
-                            <input asp-for="FotosAdicionais" type="file" accept="image/*" multiple class="form-control" id="FotosAdicionais" />
-                            <div class="image-preview-grid mt-2"></div>
-                            <span class="text-muted small d-block">Pode selecionar múltiplas fotos da situação.</span>
+                            <div class="d-flex flex-wrap gap-2 mb-2">
+                                <button type="button" class="btn-upload-action btn-upload-camera" data-target-input="FotosAdicionais" data-mode="camera">
+                                    <i class="bi bi-camera-fill"></i> Tirar Foto Direto
+                                </button>
+                                <button type="button" class="btn-upload-action btn-upload-gallery" data-target-input="FotosAdicionais" data-mode="gallery">
+                                    <i class="bi bi-folder2-open"></i> Galeria / Arquivos
+                                </button>
+                            </div>
+                            <input asp-for="FotosAdicionais" type="file" accept="image/*" multiple class="form-control d-none" id="FotosAdicionais" />
+                            <div class="image-preview-grid mt-2" id="preview-FotosAdicionais"></div>
+                            <span class="text-muted small d-block">Pode tirar várias fotos com o celular ou selecionar múltiplas fotos da situação.</span>
                         </div>
 
                         <!-- Observações Gerais -->

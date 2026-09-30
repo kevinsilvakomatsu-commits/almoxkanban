@@ -39,8 +39,19 @@
                     </div>
 
                     <div class="mb-4">
-                        <label asp-for="NovaFotoPerfil" class="form-label small fw-semibold text-secondary">Alterar Foto de Perfil</label>
-                        <input asp-for="NovaFotoPerfil" type="file" accept="image/*" class="form-control" />
+                        <label class="form-label small fw-semibold text-secondary d-flex align-items-center justify-content-between mb-1">
+                            <span>Alterar Foto de Perfil</span>
+                        </label>
+                        <div class="d-flex flex-wrap gap-2 mb-2">
+                            <button type="button" class="btn btn-upload-action btn-upload-camera" data-target-input="NovaFotoPerfil" data-mode="camera">
+                                <i class="bi bi-camera-fill"></i> Tirar Foto (Câmera)
+                            </button>
+                            <button type="button" class="btn btn-upload-action btn-upload-gallery" data-target-input="NovaFotoPerfil" data-mode="gallery">
+                                <i class="bi bi-folder2-open"></i> Galeria / Arquivo
+                            </button>
+                        </div>
+                        <input asp-for="NovaFotoPerfil" type="file" accept="image/*" class="form-control d-none" id="NovaFotoPerfil" />
+                        <div class="image-preview-grid mt-2" id="preview-NovaFotoPerfil"></div>
                     </div>
 
                     <button type="submit" class="btn btn-primary w-100 fw-semibold">

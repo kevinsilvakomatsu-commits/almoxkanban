@@ -1102,3 +1102,76 @@ body.sidebar-open .sidebar-overlay {
         font-size: 0.95rem;
     }
 }
+/* ===== BOTÕES DE CÂMERA E ANEXOS ===== */
+.btn-upload-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0.5rem 0.9rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.btn-upload-camera {
+    background: linear-gradient(135deg, #0284c7, #0369a1);
+    color: #ffffff;
+    border: 1px solid #0284c7;
+    box-shadow: 0 2px 6px rgba(2, 132, 199, 0.25);
+}
+
+.btn-upload-camera:hover, .btn-upload-camera:active {
+    background: linear-gradient(135deg, #0369a1, #075985);
+    color: #ffffff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(2, 132, 199, 0.35);
+}
+
+.btn-upload-gallery {
+    background-color: #f8fafc;
+    color: #334155;
+    border: 1px solid #cbd5e1;
+}
+
+.btn-upload-gallery:hover {
+    background-color: #e2e8f0;
+    color: #0f172a;
+}
+
+.preview-thumbnail-card {
+    position: relative;
+    width: 95px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.06);
+}
+
+.preview-thumbnail-remove {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    width: 22px;
+    height: 22px;
+    background: rgba(220, 38, 38, 0.9);
+    color: #ffffff;
+    border: none;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    line-height: 1;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    z-index: 2;
+    transition: background-color 0.15s ease;
+}
+
+.preview-thumbnail-remove:hover {
+    background: #b91c1c;
+}

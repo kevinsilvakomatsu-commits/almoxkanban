@@ -66,7 +66,8 @@
 
                     @if (!string.IsNullOrEmpty(foto))
                     {
-                        <img src="@foto" alt="@nome" class="user-avatar" />
+                        <img src="@foto" alt="@nome" class="user-avatar" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';" />
+                        <div class="user-avatar" style="display: none;">@iniciais</div>
                     }
                     else
                     {

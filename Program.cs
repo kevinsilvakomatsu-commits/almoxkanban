@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using AlmoxKanban.Data;
 using AlmoxKanban.Services;
+using AlmoxKanban.Models;
 
 // Compatibilidade de formato de datas (DateTime.Now) com PostgreSQL
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
@@ -114,6 +115,69 @@ using (var scope = app.Services.CreateScope())
         var context = services.GetRequiredService<AppDbContext>();
         SeedData.Initialize(context);
 
+        // Garantir que a tabela de uploads exista no banco (PostgreSQL ou SQLite)
+        try
+        {
+            var isNpgsql = context.Database.ProviderName?.Contains("Npgsql") == true;
+            if (isNpgsql)
+            {
+                context.Database.ExecuteSqlRaw(@"
+                    CREATE TABLE IF NOT EXISTS ""ArquivosUpload"" (
+                        ""CaminhoRelativo"" VARCHAR(300) PRIMARY KEY,
+                        ""Conteudo"" BYTEA NOT NULL,
+                        ""ContentType"" VARCHAR(100) NOT NULL,
+                        ""DataUpload"" TIMESTAMP NOT NULL
+                    );
+                ");
+            }
+            else
+            {
+                context.Database.ExecuteSqlRaw(@"
+                    CREATE TABLE IF NOT EXISTS ""ArquivosUpload"" (
+                        ""CaminhoRelativo"" TEXT PRIMARY KEY,
+                        ""Conteudo"" BLOB NOT NULL,
+                        ""ContentType"" TEXT NOT NULL,
+                        ""DataUpload"" TEXT NOT NULL
+                    );
+                ");
+            }
+
+            // Sincronizar arquivos físicos locais para o banco caso ainda não estejam lá
+            var pastaUploads = Path.Combine(app.Environment.WebRootPath, "uploads");
+            if (Directory.Exists(pastaUploads))
+            {
+                var arquivosFisicos = Directory.GetFiles(pastaUploads, "*.*", SearchOption.AllDirectories);
+                foreach (var arquivoFisico in arquivosFisicos)
+                {
+                    var rel = "/" + Path.GetRelativePath(app.Environment.WebRootPath, arquivoFisico).Replace('\\', '/');
+                    if (!context.ArquivosUpload.Any(a => a.CaminhoRelativo == rel))
+                    {
+                        var ext = Path.GetExtension(arquivoFisico).ToLowerInvariant();
+                        var ct = ext switch
+                        {
+                            ".jpg" or ".jpeg" => "image/jpeg",
+                            ".png" => "image/png",
+                            ".webp" => "image/webp",
+                            _ => "application/octet-stream"
+                        };
+                        var bytes = File.ReadAllBytes(arquivoFisico);
+                        context.ArquivosUpload.Add(new ArquivoUpload
+                        {
+                            CaminhoRelativo = rel,
+                            Conteudo = bytes,
+                            ContentType = ct,
+                            DataUpload = DateTime.Now
+                        });
+                    }
+                }
+                context.SaveChanges();
+            }
+        }
+        catch (Exception exSync)
+        {
+            Console.WriteLine($"[AlmoxKanban] Aviso ao sincronizar uploads com banco: {exSync.Message}");
+        }
+
         var modeloPath = Path.Combine(templatesDir, "modelo_importacao.xlsx");
         if (!File.Exists(modeloPath))
         {
@@ -161,6 +225,54 @@ app.Use(async (context, next) =>
         }
     }
     await next();
+});
+
+// Endpoint para servir uploads persistidos no banco de dados caso não estejam no disco local (após restart/deploy no Render)
+app.MapGet("/uploads/{subpasta}/{nome}", async (string subpasta, string nome, AppDbContext db, IWebHostEnvironment env) =>
+{
+    var caminhoRelativo = $"/uploads/{subpasta}/{nome}";
+
+    // 1. Se já existe fisicamente no disco, servir do disco
+    var caminhoFisico = Path.Combine(env.WebRootPath, "uploads", subpasta, nome);
+    if (File.Exists(caminhoFisico))
+    {
+        var ext = Path.GetExtension(nome).ToLowerInvariant();
+        var ct = ext switch
+        {
+            ".jpg" or ".jpeg" => "image/jpeg",
+            ".png" => "image/png",
+            ".webp" => "image/webp",
+            _ => "application/octet-stream"
+        };
+        return Results.File(caminhoFisico, ct);
+    }
+
+    // 2. Se não está no disco, buscar no banco de dados
+    var arquivoDb = await db.ArquivosUpload.FirstOrDefaultAsync(a => a.CaminhoRelativo == caminhoRelativo);
+    if (arquivoDb != null && arquivoDb.Conteudo.Length > 0)
+    {
+        try
+        {
+            var pastaFisica = Path.Combine(env.WebRootPath, "uploads", subpasta);
+            if (!Directory.Exists(pastaFisica)) Directory.CreateDirectory(pastaFisica);
+            await File.WriteAllBytesAsync(caminhoFisico, arquivoDb.Conteudo);
+        }
+        catch { }
+
+        return Results.File(arquivoDb.Conteudo, arquivoDb.ContentType);
+    }
+
+    // 3. Se for foto de perfil e não existir, retornar avatar SVG padrão elegante
+    if (subpasta.Equals("perfis", StringComparison.OrdinalIgnoreCase))
+    {
+        var svg = @"<svg xmlns=""http://www.w3.org/2000/svg"" viewBox=""0 0 100 100"">
+            <circle cx=""50"" cy=""50"" r=""50"" fill=""#334155""/>
+            <path d=""M50 48a16 16 0 1 0 0-32 16 16 0 0 0 0 32zm0 8c-18 0-32 11-32 24v4h64v-4c0-13-14-24-32-24z"" fill=""#94a3b8""/>
+        </svg>";
+        return Results.Content(svg, "image/svg+xml");
+    }
+
+    return Results.NotFound();
 });
 
 app.MapRazorPages();

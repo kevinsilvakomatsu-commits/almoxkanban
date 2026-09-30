@@ -3,8 +3,8 @@
 <div class="kanban-card" data-id="@Model.Id">
     @if (!string.IsNullOrEmpty(Model.FotoCapaAtual))
     {
-        <a href="/Tarefas/Detalhes?id=@Model.Id">
-            <img src="@Model.FotoCapaAtual" alt="@Model.Titulo" class="card-img-cover" loading="lazy" />
+        <a href="/Tarefas/Detalhes?id=@Model.Id" class="card-img-link">
+            <img src="@Model.FotoCapaAtual" alt="@Model.Titulo" class="card-img-cover" loading="lazy" onerror="this.closest('.card-img-link')?this.closest('.card-img-link').style.display='none':this.style.display='none';" />
         </a>
     }
 
@@ -92,13 +92,14 @@
             <div class="avatars-stack" title="Responsáveis: @string.Join(", ", Model.Responsaveis.Select(r => r.Usuario.NomeCompleto))">
                 @foreach (var resp in Model.Responsaveis.Take(3))
                 {
+                    var iniciais = string.Join("", resp.Usuario.NomeCompleto.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(s => s[0])).ToUpper();
                     if (!string.IsNullOrEmpty(resp.Usuario.FotoPerfil))
                     {
-                        <img src="@resp.Usuario.FotoPerfil" alt="@resp.Usuario.NomeCompleto" class="avatar-xs" />
+                        <img src="@resp.Usuario.FotoPerfil" alt="@resp.Usuario.NomeCompleto" class="avatar-xs" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='inline-flex';" />
+                        <span class="avatar-xs" style="display: none;">@iniciais</span>
                     }
                     else
                     {
-                        var iniciais = string.Join("", resp.Usuario.NomeCompleto.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(s => s[0])).ToUpper();
                         <span class="avatar-xs">@iniciais</span>
                     }
                 }

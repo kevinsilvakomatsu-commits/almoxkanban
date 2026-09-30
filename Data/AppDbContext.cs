@@ -16,6 +16,7 @@ namespace AlmoxKanban.Data
         public DbSet<Comentario> Comentarios { get; set; }
         public DbSet<HistoricoTarefa> HistoricoTarefas { get; set; }
         public DbSet<RegistroAuditoria> RegistrosAuditoria { get; set; }
+        public DbSet<ArquivoUpload> ArquivosUpload { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

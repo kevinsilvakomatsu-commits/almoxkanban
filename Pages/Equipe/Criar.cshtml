@@ -56,8 +56,19 @@
                         </div>
 
                         <div class="col-md-6">
-                            <label asp-for="FotoPerfil" class="form-label fw-semibold text-secondary">Foto de Perfil (Opcional)</label>
-                            <input asp-for="FotoPerfil" type="file" accept="image/*" class="form-control" />
+                            <label class="form-label fw-semibold text-secondary d-flex align-items-center justify-content-between mb-1">
+                                <span>Foto de Perfil (Opcional)</span>
+                            </label>
+                            <div class="d-flex flex-wrap gap-2 mb-2">
+                                <button type="button" class="btn btn-upload-action btn-upload-camera" data-target-input="FotoPerfil" data-mode="camera">
+                                    <i class="bi bi-camera-fill"></i> Tirar Foto (Câmera)
+                                </button>
+                                <button type="button" class="btn btn-upload-action btn-upload-gallery" data-target-input="FotoPerfil" data-mode="gallery">
+                                    <i class="bi bi-folder2-open"></i> Galeria / Arquivo
+                                </button>
+                            </div>
+                            <input asp-for="FotoPerfil" type="file" accept="image/*" class="form-control d-none" id="FotoPerfil" />
+                            <div class="image-preview-grid mt-2" id="preview-FotoPerfil"></div>
                         </div>
                     </div>
 
